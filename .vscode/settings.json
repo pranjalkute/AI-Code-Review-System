@@ -1,0 +1,10 @@
+{
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "aiReviewer.reviewOnSave": true,
+  "aiReviewer.maxComplexity": 10,
+  "aiReviewer.maxFunctionLines": 25,
+  "aiReviewer.maxNesting": 3,
+  "files.associations": {
+    "*.py": "python"
+  }
+}

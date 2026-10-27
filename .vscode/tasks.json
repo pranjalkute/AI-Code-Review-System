@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AI Code Review: Current File",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "${workspaceFolder}/cli.py",
+        "${file}",
+        "--format",
+        "vscode"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "ai-code-reviewer",
+        "fileLocation": ["absolute"],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error|info):\\s+\\[(.*?)\\]\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      }
+    },
+    {
+      "label": "AI Code Review: Terminal Report",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "${workspaceFolder}/cli.py",
+        "${file}"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Run AI Reviewer Tests",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "tests"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always"
+      }
+    }
+  ]
+}

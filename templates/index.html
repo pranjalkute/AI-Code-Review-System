@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review Assistant | CEP Project AD3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-size: 1.5rem;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .brand-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .team-pill {
+            background-color: #334155;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+        .container {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 1.75rem;
+        }
+        .panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+        .panel-header {
+            padding: 1rem 1.25rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preset-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            background: #475569;
+            color: white;
+        }
+        .editor-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 420px;
+        }
+        textarea#code-input {
+            width: 100%;
+            height: 100%;
+            min-height: 420px;
+            background: #090d16;
+            color: #e2e8f0;
+            border: none;
+            padding: 1.2rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+        .panel-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            background: rgba(15, 23, 42, 0.4);
+        }
+        .btn-analyze {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-analyze:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        /* Results View */
+        .results-container {
+            padding: 1.25rem;
+            overflow-y: auto;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .score-hero {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 1.25rem;
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(15, 23, 42, 0.8));
+            border: 1px solid #3b82f6;
+            border-radius: 12px;
+            padding: 1.25rem;
+            align-items: center;
+        }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: conic-gradient(var(--score-color, #10b981) calc(var(--score, 90) * 1%), #334155 0);
+            position: relative;
+        }
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: #0f172a;
+        }
+        .score-val {
+            position: relative;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .score-sub {
+            position: relative;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .score-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .grade-badge {
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--score-color, #10b981);
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+        .metric-tile {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        .metric-tile .val {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .metric-tile .lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .issues-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .issue-item {
+            background: #0f172a;
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .issue-item.error { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.08); }
+        .issue-item.warning { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.08); }
+        .issue-item.info { border-left-color: var(--primary); background: rgba(59, 130, 246, 0.08); }
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .issue-msg {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        .issue-sugg {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .tab-btn.active {
+            color: white;
+            background: #334155;
+        }
+        pre.ast-code {
+            background: #090d16;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            max-height: 250px;
+            overflow: auto;
+        }
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">AI Code Review Assistant</div>
+                <div class="brand-sub">CEP Project AD3 | AST Static Code Analysis & Scoring</div>
+            </div>
+        </div>
+        <div class="team-pill">
+            Pranjal Kute • Janhavi Phadke • Siyona Pande • Anushka Kadam
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Editor Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">📝 Python Code Editor</span>
+                <div class="preset-bar">
+                    <button class="preset-btn" onclick="loadPreset('prototype')">Prototype</button>
+                    <button class="preset-btn" onclick="loadPreset('clean')">Clean Code</button>
+                    <button class="preset-btn" onclick="loadPreset('complex')">Complex</button>
+                    <button class="preset-btn" onclick="loadPreset('syntax')">Syntax Error</button>
+                </div>
+            </div>
+            <div class="editor-wrap">
+                <textarea id="code-input" spellcheck="false" placeholder="def calculate(a, b): ..."></textarea>
+            </div>
+            <div class="panel-footer">
+                <button class="btn-analyze" onclick="runAnalysis()">
+                    <span>🚀 Run AI Code Review</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Results Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">📊 Analysis Report & Quality Score</span>
+                <div class="tabs">
+                    <button class="tab-btn active" id="tab-overview" onclick="switchTab('overview')">Overview</button>
+                    <button class="tab-btn" id="tab-ast" onclick="switchTab('ast')">AST Tree</button>
+                </div>
+            </div>
+            <div class="results-container" id="results-view">
+                <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                    Click "Run AI Code Review" or select a preset to analyze your Python source code.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRESETS = {
+            prototype: `def calculate(a, b):\\n    result = a + b\\n    unused_variable = 10\\n    return result\\n`,
+            clean: `\"\"\"Clean math utility module with 100/100 code quality.\"\"\"\\n\\ndef add_numbers(first_num: float, second_num: float) -> float:\\n    \"\"\"Computes sum.\"\"\"\\n    return first_num + second_num\\n`,
+            complex: `def process_orders(orders, flag):\\n    dummy = 123\\n    total = 0\\n    if orders:\\n        for order in orders:\\n            if order.get("active"):\\n                for item in order.get("items", []):\\n                    if item.get("in_stock"):\\n                        total += item.get("price", 0)\\n    return total\\n`,
+            syntax: `def broken_code(x, y)\\n    print("Missing colon")\\n    return x + y\\n`
+        };
+
+        let currentReport = null;
+        let activeTab = 'overview';
+
+        function loadPreset(key) {
+            const raw = PRESETS[key] || '';
+            document.getElementById('code-input').value = raw.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+            runAnalysis();
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (currentReport) renderReport(currentReport);
+        }
+
+        async function runAnalysis() {
+            const code = document.getElementById('code-input').value;
+            const container = document.getElementById('results-view');
+            container.innerHTML = `<div style="text-align: center; padding: 3rem; color: var(--text-muted);">Analyzing Python Abstract Syntax Tree...</div>`;
+
+            try {
+                const res = await fetch('/api/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, filename: 'editor.py' })
+                });
+                const data = await res.json();
+                currentReport = data;
+                renderReport(data);
+            } catch (err) {
+                container.innerHTML = `<div style="color: var(--danger); padding: 1.5rem;">Error executing review: ${err.message}</div>`;
+            }
+        }
+
+        function renderReport(report) {
+            const container = document.getElementById('results-view');
+            if (activeTab === 'ast') {
+                container.innerHTML = `
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Abstract Syntax Tree (AST) Hierarchy</h4>
+                    <pre class="ast-code">${report.ast_tree ? escapeHtml(report.ast_tree) : 'No AST generated due to syntax error.'}</pre>
+                `;
+                return;
+            }
+
+            const score = report.total_score;
+            let scoreColor = '#10b981';
+            if (score < 70) scoreColor = '#f59e0b';
+            if (score < 50) scoreColor = '#ef4444';
+
+            const compLabel = report.metrics.max_complexity <= 5 ? 'Low' : (report.metrics.max_complexity <= 10 ? 'Mod' : 'High');
+
+            let issuesHtml = '';
+            if (!report.issues || report.issues.length === 0) {
+                issuesHtml = `<div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 8px; color: #a7f3d0; text-align: center;">✓ Perfect code! No syntax errors, unused variables, or deep nesting detected.</div>`;
+            } else {
+                issuesHtml = report.issues.map(iss => `
+                    <div class="issue-item ${iss.severity.toLowerCase()}">
+                        <div class="issue-header">
+                            <span>[${escapeHtml(iss.type)}] Line ${iss.line}:${iss.column}</span>
+                            <span style="color: #ef4444; font-weight: bold;">-${iss.deduction} pts</span>
+                        </div>
+                        <div class="issue-msg">${escapeHtml(iss.message)}</div>
+                        <div class="issue-sugg">Suggestion: ${escapeHtml(iss.suggestion)}</div>
+                    </div>
+                `).join('');
+            }
+
+            let suggestionsHtml = report.suggestions.map((s, idx) => `
+                <li style="margin-bottom: 6px; font-size: 0.85rem; color: #cbd5e1;">${escapeHtml(s)}</li>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="score-hero" style="border-color: ${scoreColor};">
+                    <div class="score-circle" style="--score: ${score}; --score-color: ${scoreColor};">
+                        <span class="score-val">${score}</span>
+                        <span class="score-sub">out of 100</span>
+                    </div>
+                    <div class="score-info">
+                        <div class="grade-badge" style="color: ${scoreColor};">${escapeHtml(report.grade)}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(report.summary.replace(/\\n/g, ' '))}</div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-tile">
+                        <div class="val">${report.syntax_valid ? '✓ Valid' : '✗ Error'}</div>
+                        <div class="lbl">Syntax</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="val">${report.metrics.num_functions}</div>
+                        <div class="lbl">Functions</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="val">${compLabel} (${report.metrics.max_complexity})</div>
+                        <div class="lbl">Complexity</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="val">${report.issues.length}</div>
+                        <div class="lbl">Issues Found</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #cbd5e1;">Issues & Deductions</h4>
+                    <div class="issues-box">${issuesHtml}</div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #cbd5e1;">Actionable Improvement Suggestions</h4>
+                    <ul style="padding-left: 1.25rem;">${suggestionsHtml}</ul>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Auto-load prototype on page open
+        window.addEventListener('DOMContentLoaded', () => {
+            loadPreset('prototype');
+        });
+    </script>
+</body>
+</html>

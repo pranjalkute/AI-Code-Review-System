@@ -1,0 +1,44 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AI Reviewer: Review Active File",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli.py",
+      "args": [
+        "${file}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "AI Reviewer: Launch Flask Web Dashboard",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/app_web.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "AI Reviewer: Launch Streamlit Web App",
+      "type": "python",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/app_streamlit.py"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "AI Reviewer: Run All Unit Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest",
+      "args": [
+        "discover",
+        "tests"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}

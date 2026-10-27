@@ -1,0 +1,104 @@
+{
+  "name": "ai-code-reviewer",
+  "displayName": "AI Code Review Assistant",
+  "description": "Intelligent AST-based Python code review system, complexity auditor, and quality scorer (CEP Project AD3)",
+  "version": "1.0.0",
+  "publisher": "ad3-team",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Education"
+  ],
+  "keywords": [
+    "python",
+    "code review",
+    "ast",
+    "quality score",
+    "complexity",
+    "unused variables"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiReviewer.reviewCurrentFile",
+        "title": "AI Code Review: Analyze Current File",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "aiReviewer.showReport",
+        "title": "AI Code Review: Open Review Dashboard Panel",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "aiReviewer.clearDiagnostics",
+        "title": "AI Code Review: Clear Review Issues"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "aiReviewer.reviewCurrentFile",
+          "when": "editorLangId == python",
+          "group": "navigation"
+        },
+        {
+          "command": "aiReviewer.showReport",
+          "when": "editorLangId == python",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "aiReviewer.reviewCurrentFile",
+          "when": "editorLangId == python",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "aiReviewer.reviewCurrentFile",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "editorLangId == python"
+      }
+    ],
+    "configuration": {
+      "title": "AI Code Reviewer",
+      "properties": {
+        "aiReviewer.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to Python executable"
+        },
+        "aiReviewer.reviewOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically run code review when saving a Python file"
+        },
+        "aiReviewer.maxComplexity": {
+          "type": "number",
+          "default": 10,
+          "description": "Maximum cyclomatic complexity threshold"
+        },
+        "aiReviewer.maxFunctionLines": {
+          "type": "number",
+          "default": 25,
+          "description": "Maximum lines for a single function"
+        },
+        "aiReviewer.maxNesting": {
+          "type": "number",
+          "default": 3,
+          "description": "Maximum allowed block nesting depth"
+        }
+      }
+    }
+  }
+}
